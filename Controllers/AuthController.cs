@@ -35,7 +35,7 @@ namespace nexus.Controllers
         /// <response code="400">Dados de entrada inválidos</response>
         [HttpPost("login")]
         [AllowAnonymous] // Login não precisa de autenticação
-        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResponseDtoWithId), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponseDto), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginDto? loginDto)
@@ -82,12 +82,24 @@ namespace nexus.Controllers
 
                 _logger.LogInformation("Login realizado com sucesso para email: {Email}", loginDto.Email);
 
-                return Ok(new LoginResponseDto
+                // Buscar o usuário para retornar o ID
+                var usuario = await _jwtService.GetUsuarioByEmailAsync(loginDto.Email);
+                if (usuario == null)
+                {
+                    return Unauthorized(new ErrorResponseDto
+                    {
+                        Message = "Usuário não encontrado após autenticação",
+                        Details = new[] { "Verifique suas credenciais e tente novamente" }
+                    });
+                }
+
+                return Ok(new LoginResponseDtoWithId
                 {
                     Token = token,
                     TokenType = "Bearer",
                     ExpiresIn = 3600, // 1 hora
-                    Message = "Login realizado com sucesso"
+                    Message = "Login realizado com sucesso",
+                    IdUsuario = usuario.IdUsuario
                 });
             }
             catch (Exception ex)
@@ -304,6 +316,17 @@ namespace nexus.Controllers
         /// Mensagem de resposta
         /// </summary>
         public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO para resposta de login com ID do usuário
+    /// </summary>
+    public class LoginResponseDtoWithId : LoginResponseDto
+    {
+        /// <summary>
+        /// ID do usuário
+        /// </summary>
+        public int IdUsuario { get; set; }
     }
 
     /// <summary>

@@ -223,5 +223,15 @@ namespace nexus.Services.Auth
         {
             return HasRole(principal, "GESTOR") || HasRole(principal, "PROFISSIONAL");
         }
+
+        /// <summary>
+        /// Obtém um usuário pelo email
+        /// </summary>
+        /// <param name="email">Email do usuário</param>
+        /// <returns>Usuário correspondente ao email, ou null se não encontrado</returns>
+        public async Task<Usuario?> GetUsuarioByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+        }
     }
 }

@@ -278,9 +278,9 @@ namespace nexus.Controllers
             {
                 var caminhoArquivo = Path.Combine(AppContext.BaseDirectory, "custom_training_data.csv");
                 
-                if (File.Exists(caminhoArquivo))
+                if (System.IO.File.Exists(caminhoArquivo))
                 {
-                    File.Delete(caminhoArquivo);
+                    System.IO.File.Delete(caminhoArquivo);
                     _logger.LogInformation("Exemplos customizados removidos");
                 }
 
